@@ -72,13 +72,8 @@ func sqipy(path string) {
 	}
 }
 
-func build() {
-
-}
-
-func main() {
-	files := getImage("photos/collection")
-	sizes := [2]int{2048, 750}
+func generate(path string, sizes[]int) {
+	files := getImage(path)
 
 	for _, file := range files {
 		for _, size := range sizes {
@@ -86,4 +81,10 @@ func main() {
 		}
 		sqipy(file)
 	}
+}
+
+func main() {
+	generate("photos/cover", []int{2560, 1920, 1280, 960, 640, 480, 320})
+	generate("photos/profile", []int{1024, 320})
+	generate("photos/collection", []int{2048, 750})
 }
