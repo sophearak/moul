@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/denisbrodbeck/sqip"
+	"github.com/spf13/viper"
 	"gopkg.in/h2non/bimg.v1"
 )
 
@@ -72,7 +74,7 @@ func sqipy(path string) {
 	}
 }
 
-func generate(path string, sizes[]int) {
+func generate(path string, sizes []int) {
 	files := getImage(path)
 
 	for _, file := range files {
@@ -84,7 +86,16 @@ func generate(path string, sizes[]int) {
 }
 
 func main() {
-	generate("photos/cover", []int{2560, 1920, 1280, 960, 640, 480, 320})
-	generate("photos/profile", []int{1024, 320})
-	generate("photos/collection", []int{2048, 750})
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+
+	//generate("photos/cover", []int{2560, 1920, 1280, 960, 640, 480, 320})
+	//generate("photos/profile", []int{1024, 320})
+	//generate("photos/collection", []int{2048, 750})
+
+	err := viper.ReadInConfig()
+
+	if err != nil {
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
 }

@@ -8,7 +8,7 @@ require (
 	github.com/mitchellh/go-homedir v1.0.0 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/spf13/cobra v0.0.3 // indirect
-	github.com/spf13/viper v1.3.1 // indirect
+	github.com/spf13/viper v1.3.1
 	github.com/tdewolff/minify v2.3.6+incompatible // indirect
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	golang.org/x/image v0.0.0-20181116024801-cd38e8056d9b // indirect
