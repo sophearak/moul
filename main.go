@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/denisbrodbeck/sqip"
+	"github.com/gobuffalo/plush"
 	"github.com/spf13/viper"
 	"gopkg.in/h2non/bimg.v1"
 )
@@ -98,4 +99,27 @@ func main() {
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}
+
+	html := `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title><%= siteName %></title>
+</head>
+<body>
+  <h1><%= siteName %></h1>
+</body>
+</html>`
+
+	ctx := plush.NewContext()
+	ctx.Set("siteName", viper.Get("site.name"))
+
+	s, err := plush.Render(html, ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Print(s)
 }

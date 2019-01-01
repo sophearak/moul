@@ -2,5 +2,10 @@
   "site": {
     "name": "Moul",
     "description": "The minimalist photo collection generator"
+  },
+  "social": {
+    "twitter": "https://twitter.com",
+    "facebook": "https://www.facebook.com",
+    "instagram": "https://www.instagram.com"
   }
 }
