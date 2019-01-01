@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -12,6 +13,11 @@ import (
 	"github.com/denisbrodbeck/sqip"
 	"github.com/gobuffalo/plush"
 	"github.com/spf13/viper"
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/css"
+	"github.com/tdewolff/minify/html"
+	"github.com/tdewolff/minify/js"
+	"github.com/tdewolff/minify/json"
 	"gopkg.in/h2non/bimg.v1"
 )
 
@@ -100,26 +106,53 @@ func main() {
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}
 
-	html := `<!DOCTYPE html>
+	htmlTemplate := `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title><%= siteName %></title>
+  <style type="text/css">
+    body {
+      margin: 0
+    }
+  </style>
 </head>
 <body>
+
   <h1><%= siteName %></h1>
+
+  <script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", () => {
+      console.log("DOM ready!");
+    })
+  </script>
 </body>
 </html>`
 
 	ctx := plush.NewContext()
 	ctx.Set("siteName", viper.Get("site.name"))
 
-	s, err := plush.Render(html, ctx)
+	s, err := plush.Render(htmlTemplate, ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Print(s)
+	m := minify.New()
+	m.AddFunc("text/css", css.Minify)
+	m.AddFunc("text/html", html.Minify)
+	m.AddFuncRegexp(regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$"), js.Minify)
+	m.AddFuncRegexp(regexp.MustCompile("[/+]json$"), json.Minify)
+
+	m.Add("text/html", &html.Minifier{
+		KeepDocumentTags: true,
+	})
+
+	mt, err := m.String("text/html", s)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(mt)
 }
