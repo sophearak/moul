@@ -1,6 +1,17 @@
 package moul
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/gobuffalo/plush"
+	"github.com/spf13/viper"
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/css"
+	"github.com/tdewolff/minify/html"
+	"github.com/tdewolff/minify/js"
+	"github.com/tdewolff/minify/json"
+	"log"
+	"regexp"
+)
 
 type Collection struct {
 	Name     string `json:"name"`
@@ -138,4 +149,38 @@ func Build() {
 </body>
 </html>`
 	fmt.Print(template)
+
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+
+	err := viper.ReadInConfig()
+
+	if err != nil {
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
+
+	ctx := plush.NewContext()
+	ctx.Set("siteName", viper.Get("site.name"))
+
+	s, err := plush.Render(template, ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	m := minify.New()
+	m.AddFunc("text/css", css.Minify)
+	m.AddFunc("text/html", html.Minify)
+	m.AddFuncRegexp(regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$"), js.Minify)
+	m.AddFuncRegexp(regexp.MustCompile("[/+]json$"), json.Minify)
+
+	m.Add("text/html", &html.Minifier{
+		KeepDocumentTags: true,
+	})
+
+	mt, err := m.String("text/html", s)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(mt)
 }

@@ -1,23 +1,18 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/sophearak/moul/moul"
+	"image"
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
 
 	"github.com/denisbrodbeck/sqip"
-	"github.com/gobuffalo/plush"
-	"github.com/spf13/viper"
-	"github.com/tdewolff/minify"
-	"github.com/tdewolff/minify/css"
-	"github.com/tdewolff/minify/html"
-	"github.com/tdewolff/minify/js"
-	"github.com/tdewolff/minify/json"
 	"gopkg.in/h2non/bimg.v1"
 )
 
@@ -81,6 +76,19 @@ func sqipy(path string) {
 	}
 }
 
+func getImageDimension(path string) (int, int) {
+	file, err := os.Open(path)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+	}
+
+	image, _, err := image.DecodeConfig(file)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s: %v\n", path, err)
+	}
+	return image.Width, image.Height
+}
+
 func generate(path string, sizes []int) {
 	files := getImage(path)
 
@@ -93,66 +101,50 @@ func generate(path string, sizes []int) {
 }
 
 func main() {
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
 
 	//generate("photos/cover", []int{2560, 1920, 1280, 960, 640, 480, 320})
 	//generate("photos/profile", []int{1024, 320})
 	//generate("photos/collection", []int{2048, 750})
 
-	err := viper.ReadInConfig()
+	collection := getImage("./.moul/photos/collection")
 
-	if err != nil {
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	mc := make([]moul.Collection, 0)
+
+	// to be clean up
+	for index, photo := range collection {
+		for i, p := range collection {
+			if index != i && filepath.Base(photo) == filepath.Base(p) {
+				fsindex, err := os.Stat(photo)
+				if err != nil {
+					log.Fatalln(err)
+				}
+				fsi, err := os.Stat(p)
+				if err != nil {
+					log.Fatalln(err)
+				}
+				if fsindex.Size() < fsi.Size() {
+					width, height := getImageDimension(collection[index])
+					widthHd, heightHd := getImageDimension(collection[i])
+					svg := strings.TrimSuffix(filepath.Base(collection[index]), filepath.Ext(collection[index]))
+					mc = append(mc, moul.Collection{
+						Name:     filepath.Base(collection[index]),
+						Src:      collection[index],
+						Svg:      ".moul/photos/collection/svg/" + svg + ".svg",
+						Width:    width,
+						Height:   height,
+						SrcHd:    collection[i],
+						WidthHd:  widthHd,
+						HeightHd: heightHd,
+					})
+				}
+			}
+		}
 	}
 
-	htmlTemplate := `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title><%= siteName %></title>
-  <style type="text/css">
-    body {
-      margin: 0
-    }
-  </style>
-</head>
-<body>
-
-  <h1><%= siteName %></h1>
-
-  <script type="text/javascript">
-    document.addEventListener("DOMContentLoaded", () => {
-      console.log("DOM ready!");
-    })
-  </script>
-</body>
-</html>`
-
-	ctx := plush.NewContext()
-	ctx.Set("siteName", viper.Get("site.name"))
-
-	s, err := plush.Render(htmlTemplate, ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	m := minify.New()
-	m.AddFunc("text/css", css.Minify)
-	m.AddFunc("text/html", html.Minify)
-	m.AddFuncRegexp(regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$"), js.Minify)
-	m.AddFuncRegexp(regexp.MustCompile("[/+]json$"), json.Minify)
-
-	m.Add("text/html", &html.Minifier{
-		KeepDocumentTags: true,
-	})
-
-	mt, err := m.String("text/html", s)
+	mcjson, err := json.Marshal(mc)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Print(string(mcjson))
 
-	fmt.Println(mt)
 }
