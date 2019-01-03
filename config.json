@@ -1,7 +1,8 @@
 {
   "site": {
+    "url": "",
     "name": "Moul",
-    "description": "The minimalist photo collection generator"
+    "bio": "The minimalist photo collection generator"
   },
   "social": {
     "twitter": "https://twitter.com",
