@@ -7,6 +7,7 @@ import (
 	"image"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -15,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/denisbrodbeck/sqip"
+	"github.com/gobuffalo/packr/v2"
 	"github.com/gobuffalo/plush"
 	"github.com/spf13/viper"
 	"github.com/tdewolff/minify"
@@ -145,7 +147,7 @@ func Build() {
 		}
 		body {
 			margin: 0;
-			font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+			font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
 			line-height: 1.5;
 			-webkit-font-smoothing: antialiased;
 			-moz-osx-font-smoothing: grayscale;
@@ -220,7 +222,7 @@ func Build() {
 			background-size: cover;
 		}
 	</style>
-	<link rel="stylesheet" href="moul-collection.min.css">
+	<link rel="stylesheet" href="/assets/moul-collection.min.css">
 </head>
 <body>
     <div class="cover">
@@ -258,7 +260,7 @@ func Build() {
 			}, 500);
 		});
 	</script>
-	<script src="moul-collection.min.js"></script>
+	<script src="/assets/moul-collection.min.js"></script>
 </body>
 </html>`
 
@@ -369,4 +371,10 @@ func Build() {
 	//check(err)
 
 	ioutil.WriteFile("./.moul/index.html", []byte(s), 0644)
+
+	box := packr.New("moul", "../.moul")
+
+	http.Handle("/", http.FileServer(box))
+
+	http.ListenAndServe(":12345", nil)
 }
