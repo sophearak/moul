@@ -7,7 +7,6 @@ import (
 	"image"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -16,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/denisbrodbeck/sqip"
-	"github.com/gobuffalo/packr/v2"
 	"github.com/gobuffalo/plush"
 	"github.com/spf13/viper"
 	"github.com/tdewolff/minify"
@@ -371,10 +369,4 @@ func Build() {
 	//check(err)
 
 	ioutil.WriteFile("./.moul/index.html", []byte(s), 0644)
-
-	box := packr.New("moul", "../.moul")
-
-	http.Handle("/", http.FileServer(box))
-
-	http.ListenAndServe(":12345", nil)
 }
