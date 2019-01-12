@@ -306,6 +306,11 @@ func Build() {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
+	//viper.WatchConfig()
+	//viper.OnConfigChange(func(e fsnotify.Event) {
+	//	Build()
+	//	fmt.Println("Updated")
+	//})
 
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))

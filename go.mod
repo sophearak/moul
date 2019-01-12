@@ -4,6 +4,7 @@ require (
 	github.com/denisbrodbeck/sqip v0.6.1
 	github.com/fogleman/gg v1.1.0 // indirect
 	github.com/fogleman/primitive v0.0.0-20170926175833-69506c928bef // indirect
+	github.com/fsnotify/fsnotify v1.4.7
 	github.com/gobuffalo/packr/v2 v2.0.0-rc.13
 	github.com/gobuffalo/plush v3.7.32+incompatible
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect

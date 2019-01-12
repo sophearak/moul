@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/gobuffalo/packr/v2"
+	"github.com/sophearak/moul/moul"
 	"github.com/spf13/cobra"
 )
 
@@ -67,9 +69,28 @@ var newCmd = &cobra.Command{
 	},
 }
 
+var previewCmd = &cobra.Command{
+	Use:   "preview",
+	Short: "Preview photo collection",
+	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		moul.Generate("photos/cover", []int{2560, 1920, 1280, 960, 640, 480, 320})
+		moul.Generate("photos/profile", []int{1024, 320})
+		moul.Generate("photos/collection", []int{2048, 750})
+
+		moul.Build()
+
+		fs := http.FileServer(http.Dir("./.moul/"))
+		http.Handle("/", fs)
+
+		http.ListenAndServe(":12345", nil)
+	},
+}
+
 func Execute() {
 	var rootCmd = &cobra.Command{Use: "moul", Short: "The minimalist photo collection generator"}
 	rootCmd.AddCommand(newCmd)
+	rootCmd.AddCommand(previewCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
