@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/denisbrodbeck/sqip"
+	"github.com/fsnotify/fsnotify"
 	"github.com/gobuffalo/plush"
 	"github.com/spf13/viper"
 	"github.com/tdewolff/minify"
@@ -129,6 +130,73 @@ func check(e error) {
 
 // build actual html
 func Build() {
+	// get cover
+	base := "./photos/cover/"
+	var coverSrcset bytes.Buffer
+	cover := getImage("./.moul/photos/cover")
+	coverName := filepath.Base(cover[0])
+	coverSrc := base + "1920/" + filepath.Base(cover[0])
+	coverSizes := []int{2560, 1920, 1280, 960, 640, 480, 320}
+	for i, size := range coverSizes {
+		fp := base + strconv.Itoa(size) + "/" + coverName + " " + strconv.Itoa(size) + "w, "
+		coverSrcset.WriteString(fp)
+		le := len(coverSizes) - 1
+
+		if i == le {
+			coverSrcset.WriteString(base + "svg/" + strings.TrimSuffix(coverName, filepath.Ext(coverName)) + ".svg 30w")
+		}
+	}
+
+	// get profile
+	profile := getImage("./.moul/photos/profile")
+	pfn := filepath.Base(profile[0])
+	pfns := strings.TrimSuffix(filepath.Base(profile[0]), filepath.Ext(filepath.Base(profile[0])))
+
+	// get photo collection
+	collection := getImage("./.moul/photos/collection")
+
+	mc := make([]Collection, 0)
+	// to be clean up
+	for index, photo := range collection {
+		for i, p := range collection {
+			if index != i && filepath.Base(photo) == filepath.Base(p) {
+				fsindex, err := os.Stat(photo)
+				if err != nil {
+					log.Fatalln(err)
+				}
+				fsi, err := os.Stat(p)
+				if err != nil {
+					log.Fatalln(err)
+				}
+				if fsindex.Size() < fsi.Size() {
+					width, height := getImageDimension(collection[index])
+					widthHd, heightHd := getImageDimension(collection[i])
+					fs := filepath.Base(collection[index])
+					base := "./photos/collection/750/"
+					baseHd := "./photos/collection/2048/"
+
+					svg := strings.TrimSuffix(fs, filepath.Ext(fs))
+					mc = append(mc, Collection{
+						Name:     fs,
+						Src:      base + fs,
+						Srcset:   base + fs + " 300w, ./photos/collection/svg/" + svg + ".svg 20w",
+						Width:    width,
+						Height:   height,
+						SrcHd:    baseHd + fs,
+						WidthHd:  widthHd,
+						HeightHd: heightHd,
+					})
+				}
+			}
+		}
+	}
+
+	mcj, _ := json.Marshal(mc)
+
+	buildHtml(coverSrc, coverSrcset.String(), pfn, pfns, string(mcj))
+}
+
+func buildHtml(coverSrc, coverSrcset, pfn, pfns, collection string) {
 	template := `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -306,83 +374,19 @@ func Build() {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
-	//viper.WatchConfig()
-	//viper.OnConfigChange(func(e fsnotify.Event) {
-	//	Build()
-	//	fmt.Println("Updated")
-	//})
-
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %s \n", err))
 	}
 
-	// get cover
-	base := "./photos/cover/"
-	var coverSrcset bytes.Buffer
-	cover := getImage("./.moul/photos/cover")
-	coverName := filepath.Base(cover[0])
-	coverSrc := base + "1920/" + filepath.Base(cover[0])
-	coverSizes := []int{2560, 1920, 1280, 960, 640, 480, 320}
-	for i, size := range coverSizes {
-		fp := base + strconv.Itoa(size) + "/" + coverName + " " + strconv.Itoa(size) + "w, "
-		coverSrcset.WriteString(fp)
-		le := len(coverSizes) - 1
-
-		if i == le {
-			coverSrcset.WriteString(base + "svg/" + strings.TrimSuffix(coverName, filepath.Ext(coverName)) + ".svg 30w")
-		}
-	}
-
-	// get profile
-	profile := getImage("./.moul/photos/profile")
-	pfn := filepath.Base(profile[0])
-	pfns := strings.TrimSuffix(filepath.Base(profile[0]), filepath.Ext(filepath.Base(profile[0])))
-
-	// get photo collection
-	collection := getImage("./.moul/photos/collection")
-
-	mc := make([]Collection, 0)
-	// to be clean up
-	for index, photo := range collection {
-		for i, p := range collection {
-			if index != i && filepath.Base(photo) == filepath.Base(p) {
-				fsindex, err := os.Stat(photo)
-				if err != nil {
-					log.Fatalln(err)
-				}
-				fsi, err := os.Stat(p)
-				if err != nil {
-					log.Fatalln(err)
-				}
-				if fsindex.Size() < fsi.Size() {
-					width, height := getImageDimension(collection[index])
-					widthHd, heightHd := getImageDimension(collection[i])
-					fs := filepath.Base(collection[index])
-					base := "./photos/collection/750/"
-					baseHd := "./photos/collection/2048/"
-
-					svg := strings.TrimSuffix(fs, filepath.Ext(fs))
-					mc = append(mc, Collection{
-						Name:     fs,
-						Src:      base + fs,
-						Srcset:   base + fs + " 300w, ./photos/collection/svg/" + svg + ".svg 20w",
-						Width:    width,
-						Height:   height,
-						SrcHd:    baseHd + fs,
-						WidthHd:  widthHd,
-						HeightHd: heightHd,
-					})
-				}
-			}
-		}
-	}
-
-	mcj, err := json.Marshal(mc)
-	check(err)
+	viper.WatchConfig()
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		buildHtml(coverSrc, coverSrcset, pfn, pfns, collection)
+		fmt.Println("Updated")
+	})
 
 	// push data to template
 	ctx := plush.NewContext()
-	ctx.Set("coverSrcset", coverSrcset.String())
+	ctx.Set("coverSrcset", coverSrcset)
 	ctx.Set("coverSrc", coverSrc)
 
 	ctx.Set("pfn", pfn)
@@ -396,7 +400,7 @@ func Build() {
 	ctx.Set("facebook", viper.Get("social.facebook"))
 	ctx.Set("instagram", viper.Get("social.instagram"))
 
-	ctx.Set("collection", string(mcj))
+	ctx.Set("collection", collection)
 
 	s, err := plush.Render(template, ctx)
 	check(err)
