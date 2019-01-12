@@ -1,6 +1,6 @@
 package main
 
-import "github.com/sophearak/moul/cmd"
+import "github.com/sophearak/moul/moul"
 
 func main() {
 
@@ -8,6 +8,6 @@ func main() {
 	// moul.Generate("photos/profile", []int{1024, 320})
 	// moul.Generate("photos/collection", []int{2048, 750})
 
-	//moul.Build()
-	cmd.Execute()
+	moul.Build()
+	//cmd.Execute()
 }

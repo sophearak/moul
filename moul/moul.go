@@ -200,8 +200,22 @@ func Build() {
 		.info {
 			max-width: 500px;
 			text-align: center;
-			margin: 0 auto 32px;
+			margin: 0 auto 24px;
 			color: #444;
+		}
+		.social {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+		.social a {
+			color: #111;
+			line-height: 0;
+			margin: 0 8px 16px;
+			transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+		}
+		.social a:hover {
+			color: #888;
 		}
 		.collection {
 			position: relative;
@@ -237,10 +251,36 @@ func Build() {
     </div>
     <h1 class="name"><%= name %></h1>
     <p class="info"><%= bio %></p>
+
+	<%= if (len(twitter) > 0 || len(youtube) > 0 || len(facebook) > 0 || len(instagram) > 0) { %>
+	<div class="social">
+		<%= if (twitter) { %>
+			<a href="<%= twitter %>">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-twitter"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+			</a>
+		<% } %>
+		<%= if (youtube) { %>
+			<a href="https://www.youtube.com/">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-youtube"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
+			</a>
+		<% } %>
+		<%= if (facebook) { %>
+			<a href="https://www.facebook.com/">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-facebook"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+			</a>
+		<% } %>
+		<%= if (instagram) { %>
+			<a href="https://www.instagram.com/">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-instagram"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"></line></svg>
+			</a>
+		<% } %>
+	</div>
+	<% } %>
+	
 	<div id="collection">
 	<div>
 	
-<input type="hidden" id="photo-collection" value="<%= collection %>">
+	<input type="hidden" id="photo-collection" value="<%= collection %>">
 
 	<script type="text/javascript">
 		const $ = document.querySelector.bind(document);
@@ -347,6 +387,7 @@ func Build() {
 	ctx.Set("bio", viper.Get("site.bio"))
 
 	ctx.Set("twitter", viper.Get("social.twitter"))
+	ctx.Set("youtube", viper.Get("social.youtube"))
 	ctx.Set("facebook", viper.Get("social.facebook"))
 	ctx.Set("instagram", viper.Get("social.instagram"))
 
