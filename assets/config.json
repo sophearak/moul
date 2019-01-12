@@ -1,11 +1,12 @@
 {
   "site": {
-    "url": "",
+    "url": "https://demo.moul.app",
     "name": "Moul",
     "bio": "The minimalist photo collection generator"
   },
   "social": {
     "twitter": "",
+    "youtube": "",
     "facebook": "",
     "instagram": ""
   }
