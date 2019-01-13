@@ -6,8 +6,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/gobuffalo/packr/v2"
+	copy2 "github.com/otiai10/copy"
 	"github.com/sophearak/moul/moul"
 	"github.com/spf13/cobra"
 )
@@ -83,14 +85,53 @@ var previewCmd = &cobra.Command{
 		fs := http.FileServer(http.Dir("./.moul/"))
 		http.Handle("/", fs)
 
+		fmt.Println("Serve on http://localhost:12345")
+		fmt.Println("Ctrl + C to exit")
 		http.ListenAndServe(":12345", nil)
 	},
+}
+
+var buildCmd = &cobra.Command{
+	Use: "build",
+	Short: "Building collection for deployment",
+	Long: ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		if _, err := os.Stat("./dist"); !os.IsNotExist(err) {
+			removeContents("./dist")
+		}
+		os.MkdirAll("./dist", os.ModePerm)
+		err := copy2.Copy("./.moul", "./dist")
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("Photo collection is built")
+	},
+}
+
+func removeContents(dir string) error {
+	d, err := os.Open(dir)
+	if err != nil {
+		return err
+	}
+	defer d.Close()
+	names, err := d.Readdirnames(-1)
+	if err != nil {
+		return err
+	}
+	for _, name := range names {
+		err = os.RemoveAll(filepath.Join(dir, name))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func Execute() {
 	var rootCmd = &cobra.Command{Use: "moul", Short: "The minimalist photo collection generator"}
 	rootCmd.AddCommand(newCmd)
 	rootCmd.AddCommand(previewCmd)
+	rootCmd.AddCommand(buildCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
