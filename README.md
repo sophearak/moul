@@ -1,13 +1,15 @@
 # Moul
 > The minimalist photo collection generator.
 
+See demo: https://demo.moul.app
+
 ## Installation
 
 You can download the binary or build the project yourself.
 
 ## Usage
 
-```sh-session
+```bash
 # Create new photo collection
 moul new my-collection
 
@@ -36,11 +38,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-* github.com/denisbrodbeck/sqip
-* github.com/fogleman/primitive
-* github.com/gobuffalo/packr
-* github.com/gobuffalo/plush
-* github.com/spf13/cobra
-* github.com/spf13/viper
-* github.com/tdewolff/minify
-* gopkg.in/h2non/bimg.v1
+* [github.com/denisbrodbeck/sqip](https://github.com/denisbrodbeck/sqip)
+* [github.com/fogleman/primitive](https://github.com/fogleman/primitive)
+* [github.com/gobuffalo/packr](https://github.com/gobuffalo/packr)
+* [github.com/gobuffalo/plush](https://github.com/gobuffalo/plush)
+* [github.com/spf13/cobra](https://github.com/spf13/cobra)
+* [github.com/spf13/viper](https://github.com/spf13/viper)
+* [github.com/tdewolff/minify](https://github.com/tdewolff/minify)
+* [github.com/h2non/bimg](https://github.com/h2non/bimg)
