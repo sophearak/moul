@@ -193,10 +193,10 @@ func Build() {
 
 	mcj, _ := json.Marshal(mc)
 
-	buildHtml(coverSrc, coverSrcset.String(), pfn, pfns, string(mcj))
+	buildHtml(coverSrc, coverSrcset.String(), coverName, pfn, pfns, string(mcj))
 }
 
-func buildHtml(coverSrc, coverSrcset, pfn, pfns, collection string) {
+func buildHtml(coverSrc, coverSrcset, coverName, pfn, pfns, collection string) {
 	template := `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -204,6 +204,23 @@ func buildHtml(coverSrc, coverSrcset, pfn, pfns, collection string) {
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title><%= name %></title>
+	<meta name="description" content="<%= bio %>">
+
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="<%= name %>">
+	<meta name="twitter:description" content="<%= bio %>">
+	<%= if (twitter) { %>
+	<meta name="twitter:site" content="<%= twitter %>">
+	<meta name="twitter:creator" content="<%= twitter %>">
+	<% } %>
+	<meta name="twitter:image:src" content="<%= url %>/photos/cover/1024/<%= coverName %>">
+
+	<meta name="og:title" content="<%= name %>">
+	<meta name="og:description" content="<%= bio %>">
+	<meta name="og:image" content="<%= url %>/photos/cover/1200/<%= coverName %>">
+	<meta name="og:url" content="<%= url %>">
+	<meta name="og:site_name" content="<%= name %>">
+	<meta name="og:type" content="website">
 
 	<style type="text/css">
 		*,
@@ -380,7 +397,7 @@ func buildHtml(coverSrc, coverSrcset, pfn, pfns, collection string) {
 
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
-		buildHtml(coverSrc, coverSrcset, pfn, pfns, collection)
+		buildHtml(coverSrc, coverSrcset, coverName, pfn, pfns, collection)
 		fmt.Println("Updated")
 	})
 
@@ -388,10 +405,12 @@ func buildHtml(coverSrc, coverSrcset, pfn, pfns, collection string) {
 	ctx := plush.NewContext()
 	ctx.Set("coverSrcset", coverSrcset)
 	ctx.Set("coverSrc", coverSrc)
+	ctx.Set("coverName", coverName)
 
 	ctx.Set("pfn", pfn)
 	ctx.Set("pfns", pfns)
 
+	ctx.Set("url", viper.Get("site.url"))
 	ctx.Set("name", viper.Get("site.name"))
 	ctx.Set("bio", viper.Get("site.bio"))
 

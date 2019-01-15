@@ -34,7 +34,7 @@ var newCmd = &cobra.Command{
 			os.MkdirAll(folder, os.ModePerm)
 		}
 
-		coverSizes := []string{"2560", "1920", "1280", "960", "640", "480", "320", "svg"}
+		coverSizes := []string{"2560", "1920", "1280", "1200", "1024", "960", "640", "480", "320", "svg"}
 		for _, cs := range coverSizes {
 			os.MkdirAll(args[0] + "/.moul/photos/cover/" + cs, os.ModePerm)
 		}
@@ -76,7 +76,7 @@ var previewCmd = &cobra.Command{
 	Short: "Preview photo collection",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		moul.Generate("photos/cover", []int{2560, 1920, 1280, 960, 640, 480, 320})
+		moul.Generate("photos/cover", []int{2560, 1920, 1280, 1200, 1024, 960, 640, 480, 320})
 		moul.Generate("photos/profile", []int{1024, 320})
 		moul.Generate("photos/collection", []int{2048, 750})
 
