@@ -13,7 +13,9 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/denisbrodbeck/sqip"
 	"github.com/fsnotify/fsnotify"
 	"github.com/gobuffalo/plush"
@@ -76,13 +78,11 @@ func sqipy(path string) {
 	repeat := 0
 	workers := runtime.NumCPU()
 	background := ""
-	svg, width, height, err := sqip.Run(path, workSize, count, mode, alpha, repeat, workers, background)
+	svg, _, _, err := sqip.Run(path, workSize, count, mode, alpha, repeat, workers, background)
 
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	log.Println(width, height, workers)
 
 	out := strings.TrimSuffix(".moul/"+path, filepath.Ext(path)) + ".svg"
 	dest := filepath.Dir(out) + "/svg/" + filepath.Base(out)
@@ -112,14 +112,18 @@ func getImage(path string) []string {
 
 // generate photos
 func Generate(path string, sizes []int) {
+	s := spinner.New(spinner.CharSets[35], 100*time.Millisecond)
+	s.Prefix = "Crafting "
 	files := getImage(path)
 
+	s.Start()
 	for _, file := range files {
 		for _, size := range sizes {
 			manipulate(size, file)
 		}
 		sqipy(file)
 	}
+	s.Stop()
 }
 
 func check(e error) {

@@ -13,8 +13,8 @@ You can download the binary or build the project yourself.
 # Create new photo collection
 moul new my-collection
 
-# Preview your photo collection
-moul preview
+# Generate your photo collection
+moul dev
 
 # Build for production
 moul build

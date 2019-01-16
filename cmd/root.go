@@ -71,9 +71,9 @@ var newCmd = &cobra.Command{
 	},
 }
 
-var previewCmd = &cobra.Command{
-	Use:   "preview",
-	Short: "Preview photo collection",
+var devCmd = &cobra.Command{
+	Use:   "dev",
+	Short: "Generate photo collection",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		moul.Generate("photos/cover", []int{2560, 1920, 1280, 1200, 1024, 960, 640, 480, 320})
@@ -85,7 +85,7 @@ var previewCmd = &cobra.Command{
 		fs := http.FileServer(http.Dir("./.moul/"))
 		http.Handle("/", fs)
 
-		fmt.Println("Serve on http://localhost:12345")
+		fmt.Println("Serve:  http://localhost:12345")
 		fmt.Println("Ctrl + C to exit")
 		http.ListenAndServe(":12345", nil)
 	},
@@ -130,7 +130,7 @@ func removeContents(dir string) error {
 func Execute() {
 	var rootCmd = &cobra.Command{Use: "moul", Short: "The minimalist photo collection generator"}
 	rootCmd.AddCommand(newCmd)
-	rootCmd.AddCommand(previewCmd)
+	rootCmd.AddCommand(devCmd)
 	rootCmd.AddCommand(buildCmd)
 
 	if err := rootCmd.Execute(); err != nil {

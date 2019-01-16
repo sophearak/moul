@@ -1,7 +1,9 @@
 module github.com/sophearak/moul
 
 require (
+	github.com/briandowns/spinner v0.0.0-20181029155426-195c31b675a7
 	github.com/denisbrodbeck/sqip v0.6.1
+	github.com/fatih/color v1.7.0 // indirect
 	github.com/fogleman/gg v1.1.0 // indirect
 	github.com/fogleman/primitive v0.0.0-20170926175833-69506c928bef // indirect
 	github.com/fsnotify/fsnotify v1.4.7
@@ -9,6 +11,8 @@ require (
 	github.com/gobuffalo/plush v3.7.32+incompatible
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/markbates/inflect v1.0.4 // indirect
+	github.com/mattn/go-colorable v0.0.9 // indirect
+	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/otiai10/copy v0.0.0-20180813032824-7e9a647135a1
 	github.com/spf13/cobra v0.0.3
