@@ -20,6 +20,32 @@ moul dev
 moul build
 ```
 
+## Configuration
+
+```json
+{
+  "site": {
+    "url": "https://demo.moul.app",
+    "name": "Moul",
+    "bio": "The minimalist photo collection generator"
+  },
+  "social": {
+    "twitter": "moulapp",
+    "youtube": "",
+    "facebook": "",
+    "instagram": ""
+  }
+}
+```
+
+> The link for twitter will be come `https://twitter.com/moulapp`
+
+## Recommended size
+
+- `photos/cover`: 2560px width - any landscape aspect ratio will work fine
+- `photos/profile`: 1024px width - square (1:1 aspect ratio)
+- `photos/collection`: 2048px width - any aspect ratio
+
 ## Deployment
 
 You can pretty much deploy the `dist` folder to any static site hosting. That includes
