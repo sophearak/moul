@@ -116,6 +116,15 @@ func Generate(path string, sizes []int) {
 	s.Prefix = "Crafting "
 	files := getImage(path)
 
+	if len(files) == 0 {
+		if path != "photos/collection" {
+			fmt.Println("Add a photo inside " + path)
+		} else {
+			fmt.Println("Add photos inside " + path)
+		}
+		os.Exit(1)
+	}
+
 	s.Start()
 	for _, file := range files {
 		for _, size := range sizes {
