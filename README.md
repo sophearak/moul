@@ -1,7 +1,13 @@
 # Moul
 > The minimalist photo collection generator.
 
-See demo: https://demo.moul.app
+Demo: https://demo.moul.app
+
+## Features
+
+- Simple and easy to use
+- Smart photo collection
+- One Binary to rule them all
 
 ## Installation
 
@@ -30,7 +36,7 @@ moul build
     "bio": "The minimalist photo collection generator"
   },
   "social": {
-    "twitter": "moulapp",
+    "twitter": "mouldotco",
     "youtube": "",
     "facebook": "",
     "instagram": ""
@@ -38,7 +44,7 @@ moul build
 }
 ```
 
-> The link for twitter will be come `https://twitter.com/moulapp`
+> The link for twitter will be come `https://twitter.com/mouldotco`
 
 ## Recommended size
 
