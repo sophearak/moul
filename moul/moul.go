@@ -393,7 +393,7 @@ func buildHtml(coverSrc, coverSrcset, coverName, pfn, pfns, collection string) {
 					);
 					photo.setAttribute('sizes', sizes + 'vw');
 				});
-			}, 500);
+			}, 50);
 		});
 	</script>
 	<script src="/assets/moul-collection.min.js"></script>
