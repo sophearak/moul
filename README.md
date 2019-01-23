@@ -1,4 +1,4 @@
-# Moul
+# moul •
 
 > The minimalist photo collection generator.
 
