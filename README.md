@@ -71,19 +71,21 @@ I'm 300% sure, you know what to do. See Advanced
 ## Usage
 
 ```bash
-# create new photo collection
+# Create new photo collection
 $ moul new my-collection
 
 # Place photos into its desire folders
 
-# generate your photo collection
+# Add your information in config.json
+
+# Generate your photo collection
 $ cd my-collection && moul dev
 
-# build for production
+# Build for production
 $ moul build
 ```
 
-> It depends on how many photos you added to `photos/collection`, the commend `moul dev` might take a while. It's a good time to grab coffee.
+> It depends on how many photos you added to `photos/collection`, the command `moul dev` might take a while. It's a good time to grab coffee.
 
 ## Recommended size
 
