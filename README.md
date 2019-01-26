@@ -13,34 +13,15 @@ Demo: https://demo.moul.app
 
 ## Installation
 
-### Advanced
+Download a [single binary](https://github.com/sophearak/moul/releases), add to `$PATH` and you’re done
 
-You can download the binary on [release](https://github.com/sophearak/moul/releases) page. Put it in your local bin folder. Make sure your bin folder are in your PATH.
-
-### Detailed
+### Don't know what todo?
 
 <details><summary>macOS</summary>
 <p>
 
 ```bash
-# download binary
-$ wget https://github.com/sophearak/moul/releases/download/v1.0.0-beta.0/moul-darwin
-
-# move binary into local bin
-# if ~/.local/bin doesn't exist. $ mkdir -p ~/.local/bin
-$ mv moul-darwin ~/.local/bin/moul
-
-# make sure that ~/.local/bin in your $PATH
-# if you're using bash
-$ echo "export PATH=$PATH:~/.local/bin" >> ~/.bashrc
-
-# if you're using zsh
-$ echo "export PATH=$PATH:~/.local/bin" >> ~/.zshrc
-
-# If you don't know what it is. Use bash.
-
-# reload
-$ source ~/.bashrc
+curl -s https://moul.app/install.sh --darwin | sh
 ```
 
 </p>
@@ -48,7 +29,11 @@ $ source ~/.bashrc
 
 <details><summary>Linux</summary>
 <p>
-I'm 300% sure, you know what to do. See Advanced
+
+```bash
+curl -s https://moul.app/install.sh --linux | sh
+```
+
 </p>
 </details>
 
