@@ -9,9 +9,16 @@ elif [ -n "`$SHELL -c 'echo $BASH_VERSION'`" ]; then
   shell_profile="bashrc"
 fi
 
-if [ "$1" == "--darwin" ]; then
+unameOut="$(uname -s)"
+case "${unameOut}" in
+  Linux*)     machine=Linux;;
+  Darwin*)    machine=macOS;;
+  *)          machine="UNKNOWN:${unameOut}"
+esac
+
+if [ "${machine}" == "macOS" ]; then
   DFILE="moul-darwin"
-elif [ "$1" == "--linux" ]; then
+elif [ "${machine}" == "Linux" ]; then
   DFILE="moul-linux"
 else
   echo "Please specific OS"

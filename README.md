@@ -21,7 +21,7 @@ Download a [single binary](https://github.com/sophearak/moul/releases), add to `
 <p>
 
 ```bash
-curl -s https://moul.app/install.sh --darwin | sh
+curl -s https://moul.app/install.sh | sh
 ```
 
 </p>
@@ -31,7 +31,7 @@ curl -s https://moul.app/install.sh --darwin | sh
 <p>
 coming soon
 <!-- ```bash
-curl -s https://moul.app/install.sh --linux | sh
+curl -s https://moul.app/install.sh | sh
 ``` -->
 
 </p>
