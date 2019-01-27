@@ -29,27 +29,17 @@ curl -s https://moul.app/install.sh --darwin | sh
 
 <details><summary>Linux</summary>
 <p>
-
-```bash
+coming soon
+<!-- ```bash
 curl -s https://moul.app/install.sh --linux | sh
-```
+``` -->
 
 </p>
 </details>
 
 <details><summary>Windows</summary>
 <p>
-
-- **Step 1**: Download the binary [here](https://github.com/sophearak/moul/releases)
-- **Step 2**: Create a folder in `C:\bin` and put the downloaded file in there
-- **Step 3**: Add `C:\bin` to your `Environment Variables` by
-  - **Step 3.1**: right-click `My Computer` -> click `Properties`
-  - **Step 3.2**: In the `System Properties` window, click the `Advanced` tab, and then click `Environment Variables`.
-  - **Step 3.3**: In the `System Variables` window, highlight `Path`, and click `Edit`.
-  - **Step 3.4**: In the Edit `System Variables` window, insert the cursor at the end of the `Variable` value field.
-  - **Step 3.5**: If the last character is not a semi-colon (;), add one.
-  - **Step 3.6**: After the final semi-colon, add `path C:\bin` -> click `OK`
-
+coming soon
 </p>
 </details>
 
@@ -66,7 +56,7 @@ $ moul new my-collection
 # Generate your photo collection
 $ cd my-collection && moul dev
 
-# Build for production
+# Build
 $ moul build
 ```
 
@@ -74,9 +64,9 @@ $ moul build
 
 ## Recommended size
 
-- `photos/cover`: 2560px width - any landscape aspect ratio will work fine
-- `photos/profile`: 1024px width - square (1:1 aspect ratio)
-- `photos/collection`: 2048px width - any aspect ratio
+- `photos/cover`: Any landscape aspect ratio will work fine (recommended: 2560px wide)
+- `photos/profile`: Square - 1:1 aspect ratio (recommended: 1024px wide)
+- `photos/collection`: Any aspect ratio (recommended: 2048px wide)
 
 ## Configuration
 
