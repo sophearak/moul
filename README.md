@@ -78,7 +78,7 @@ $ moul build
     "bio": "The minimalist photo collection generator"
   },
   "social": {
-    "twitter": "mouldotco",
+    "twitter": "thasophearak",
     "youtube": "",
     "facebook": "",
     "instagram": ""
@@ -86,16 +86,16 @@ $ moul build
 }
 ```
 
-> The link for twitter will be come `https://twitter.com/mouldotco`
+> The link for twitter will be come `https://twitter.com/thasophearak`
 
 ## Deployment
 
 You can pretty much deploy the `dist` folder to any static site hosting. That includes
 
-- Firebase Hosting - https://firebase.google.com/docs/hosting
+- Now - https://zeit.co/now (more than just static site hosting)
 - Netlify - https://netlify.com
-- Now - https://zeit.co/now
 - Surge - https://surge.sh
+- Firebase Hosting - https://firebase.google.com/docs/hosting
 - Github page - https://pages.github.com
 
 and more.
