@@ -113,4 +113,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [github.com/spf13/cobra](https://github.com/spf13/cobra)
 - [github.com/spf13/viper](https://github.com/spf13/viper)
 - [github.com/tdewolff/minify](https://github.com/tdewolff/minify)
-- [github.com/h2non/bimg](https://github.com/h2non/bimg)
+- [github.com/disintegration/imaging](https://github.com/disintegration/imaging)

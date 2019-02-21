@@ -17,6 +17,7 @@ import (
 
 	"github.com/briandowns/spinner"
 	"github.com/denisbrodbeck/sqip"
+	"github.com/disintegration/imaging"
 	"github.com/fsnotify/fsnotify"
 	"github.com/gobuffalo/plush"
 	"github.com/spf13/viper"
@@ -24,7 +25,6 @@ import (
 	"github.com/tdewolff/minify/css"
 	"github.com/tdewolff/minify/html"
 	"github.com/tdewolff/minify/js"
-	"gopkg.in/h2non/bimg.v1"
 )
 
 type Collection struct {
@@ -40,19 +40,18 @@ type Collection struct {
 
 // resize image
 func manipulate(size int, path string) {
-	options := bimg.Options{
-		Width: size,
-	}
-	buffer, err := bimg.Read(path)
+	src, err := imaging.Open(path)
 	if err != nil {
-		log.Fatal(err)
-	}
-	newImage, err := bimg.NewImage(buffer).Process(options)
-	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to open image: %v", err)
 	}
 	out := ".moul/" + filepath.Dir(path) + "/" + strconv.Itoa(size) + "/" + filepath.Base(path)
-	bimg.Write(out, newImage)
+
+	newImage := imaging.Resize(src, size, 0, imaging.Lanczos)
+
+	err = imaging.Save(newImage, out)
+	if err != nil {
+		log.Fatalf("failed to save image: %v", err)
+	}
 }
 
 // get image size without open
@@ -169,38 +168,25 @@ func Build() {
 	collection := getImage("./.moul/photos/collection")
 
 	mc := make([]Collection, 0)
-	// to be clean up
-	for index, photo := range collection {
-		for i, p := range collection {
-			if index != i && filepath.Base(photo) == filepath.Base(p) {
-				fsindex, err := os.Stat(photo)
-				if err != nil {
-					log.Fatalln(err)
-				}
-				fsi, err := os.Stat(p)
-				if err != nil {
-					log.Fatalln(err)
-				}
-				if fsindex.Size() < fsi.Size() {
-					width, height := getImageDimension(collection[index])
-					widthHd, heightHd := getImageDimension(collection[i])
-					fs := filepath.Base(collection[index])
-					base := "./photos/collection/750/"
-					baseHd := "./photos/collection/2048/"
+	for _, photo := range collection {
+		if strings.Contains(photo, "2048") {
+			widthHd, heightHd := getImageDimension(photo)
+			width, height := getImageDimension(".moul/photos/collection/750/" + filepath.Base(photo))
+			fs := filepath.Base(photo)
+			base := "./photos/collection/750/"
+			baseHd := "./photos/collection/2048/"
+			svg := strings.TrimSuffix(fs, filepath.Ext(fs))
 
-					svg := strings.TrimSuffix(fs, filepath.Ext(fs))
-					mc = append(mc, Collection{
-						Name:     fs,
-						Src:      base + fs,
-						Srcset:   base + fs + " 300w, ./photos/collection/svg/" + svg + ".svg 20w",
-						Width:    width,
-						Height:   height,
-						SrcHd:    baseHd + fs,
-						WidthHd:  widthHd,
-						HeightHd: heightHd,
-					})
-				}
-			}
+			mc = append(mc, Collection{
+				Name:     fs,
+				Src:      base + fs,
+				Srcset:   base + fs + " 300w, ./photos/collection/svg/" + svg + ".svg 20w",
+				Width:    width,
+				Height:   height,
+				SrcHd:    baseHd + fs,
+				WidthHd:  widthHd,
+				HeightHd: heightHd,
+			})
 		}
 	}
 

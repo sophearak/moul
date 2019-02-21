@@ -4,6 +4,7 @@ require (
 	github.com/briandowns/spinner v0.0.0-20190126160308-b298438e1f0d
 	github.com/coreos/etcd v3.3.12+incompatible // indirect
 	github.com/denisbrodbeck/sqip v0.6.1
+	github.com/disintegration/imaging v1.6.0
 	github.com/fatih/color v1.7.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fogleman/gg v1.2.0 // indirect
@@ -29,7 +30,7 @@ require (
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/ugorji/go/codec v0.0.0-20190204201341-e444a5086c43 // indirect
 	golang.org/x/crypto v0.0.0-20190208162236-193df9c0f06f // indirect
-	golang.org/x/image v0.0.0-20190209060608-ef4a1470e0dc // indirect
+	golang.org/x/image v0.0.0-20190220214146-31aff87c08e9 // indirect
 	golang.org/x/net v0.0.0-20190206173232-65e2d4e15006 // indirect
 	golang.org/x/sys v0.0.0-20190209173611-3b5209105503 // indirect
 	golang.org/x/tools v0.0.0-20190208222737-3744606dbb67 // indirect
