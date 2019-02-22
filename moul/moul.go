@@ -170,9 +170,9 @@ func Build() {
 	mc := make([]Collection, 0)
 	for _, photo := range collection {
 		if strings.Contains(photo, "2048") {
-			widthHd, heightHd := getImageDimension(photo)
-			width, height := getImageDimension(".moul/photos/collection/750/" + filepath.Base(photo))
 			fs := filepath.Base(photo)
+			widthHd, heightHd := getImageDimension(photo)
+			width, height := getImageDimension(".moul/photos/collection/750/" + fs)
 			base := "./photos/collection/750/"
 			baseHd := "./photos/collection/2048/"
 			svg := strings.TrimSuffix(fs, filepath.Ext(fs))
