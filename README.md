@@ -17,22 +17,12 @@ Download a [single binary](https://github.com/sophearak/moul/releases), add to `
 
 ### Don't know what todo?
 
-<details><summary>macOS</summary>
+<details><summary>macOS and Linux</summary>
 <p>
 
 ```bash
 curl -s https://moul.app/install.sh | sh
 ```
-
-</p>
-</details>
-
-<details><summary>Linux</summary>
-<p>
-coming soon
-<!-- ```bash
-curl -s https://moul.app/install.sh | sh
-``` -->
 
 </p>
 </details>
