@@ -55,7 +55,7 @@ func manipulate(size int, path string) {
 }
 
 // get image size without open
-func getImageDimension(path string) (int, int) {
+func GetImageDimension(path string) (int, int) {
 	file, err := os.Open(path)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
@@ -171,8 +171,8 @@ func Build() {
 	for _, photo := range collection {
 		if strings.Contains(photo, "2048") {
 			fs := filepath.Base(photo)
-			widthHd, heightHd := getImageDimension(photo)
-			width, height := getImageDimension(".moul/photos/collection/750/" + fs)
+			widthHd, heightHd := GetImageDimension(photo)
+			width, height := GetImageDimension(".moul/photos/collection/750/" + fs)
 			base := "./photos/collection/750/"
 			baseHd := "./photos/collection/2048/"
 			svg := strings.TrimSuffix(fs, filepath.Ext(fs))
