@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/disintegration/imaging"
 	"github.com/gobuffalo/packr/v2"
 	copy2 "github.com/otiai10/copy"
 	"github.com/sophearak/moul/moul"
@@ -108,6 +110,63 @@ var buildCmd = &cobra.Command{
 	},
 }
 
+var igCmd = &cobra.Command{
+	Use:   "ig",
+	Short: "Generate photos for Instagram grid",
+	Long:  "moul ig photo.jpg",
+	Args:  cobra.MinimumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		const s = 1080
+
+		photo := args[0]
+		e := filepath.Ext(photo)
+		fn := filepath.Base(photo)
+
+		// only working with jpg and png
+		if e == ".jpg" || e == ".jpeg" || e == ".png" {
+			w, h := moul.GetImageDimension(photo)
+
+			// width must be > 3240px
+			if w < 3240 || h < 3240 {
+				fmt.Println("Minimum W x H: 3240px x 3240px")
+				os.Exit(1)
+			}
+			src, err := imaging.Open(photo)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			img := imaging.Resize(src, 3240, 3240, imaging.Lanczos)
+			// resize
+			tl := imaging.CropAnchor(img, s, s, imaging.TopLeft)
+			t := imaging.CropAnchor(img, s, s, imaging.Top)
+			tr := imaging.CropAnchor(img, s, s, imaging.TopRight)
+			ml := imaging.CropAnchor(img, s, s, imaging.Left)
+			m := imaging.CropAnchor(img, s, s, imaging.Center)
+			mr := imaging.CropAnchor(img, s, s, imaging.Right)
+			bl := imaging.CropAnchor(img, s, s, imaging.BottomLeft)
+			b := imaging.CropAnchor(img, s, s, imaging.Bottom)
+			br := imaging.CropAnchor(img, s, s, imaging.BottomRight)
+
+			photoName := strings.TrimSuffix(fn, filepath.Ext(fn))
+			os.Mkdir(photoName, os.ModePerm)
+
+			imaging.Save(br, filepath.Join(photoName, "1"+filepath.Ext(fn)))
+			imaging.Save(b, filepath.Join(photoName, "2"+filepath.Ext(fn)))
+			imaging.Save(bl, filepath.Join(photoName, "3"+filepath.Ext(fn)))
+			imaging.Save(mr, filepath.Join(photoName, "4"+filepath.Ext(fn)))
+			imaging.Save(m, filepath.Join(photoName, "5"+filepath.Ext(fn)))
+			imaging.Save(ml, filepath.Join(photoName, "6"+filepath.Ext(fn)))
+			imaging.Save(tr, filepath.Join(photoName, "7"+filepath.Ext(fn)))
+			imaging.Save(t, filepath.Join(photoName, "8"+filepath.Ext(fn)))
+			imaging.Save(tl, filepath.Join(photoName, "9"+filepath.Ext(fn)))
+		} else {
+			fmt.Println("Support only jpg and png!")
+			os.Exit(1)
+		}
+	},
+}
+
 func removeContents(dir string) error {
 	d, err := os.Open(dir)
 	if err != nil {
@@ -127,11 +186,13 @@ func removeContents(dir string) error {
 	return nil
 }
 
+// Execute func
 func Execute() {
 	var rootCmd = &cobra.Command{Use: "moul", Short: "The minimalist photo collection generator"}
 	rootCmd.AddCommand(newCmd)
 	rootCmd.AddCommand(devCmd)
 	rootCmd.AddCommand(buildCmd)
+	rootCmd.AddCommand(igCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
