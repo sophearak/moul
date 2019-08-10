@@ -1,7 +1,6 @@
 package moul
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"image"
@@ -9,28 +8,26 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/briandowns/spinner"
-	"github.com/denisbrodbeck/sqip"
 	"github.com/disintegration/imaging"
 	"github.com/fsnotify/fsnotify"
+	"github.com/generaltso/vibrant"
 	"github.com/gobuffalo/plush"
 	"github.com/spf13/viper"
-	"github.com/tdewolff/minify"
-	"github.com/tdewolff/minify/css"
-	"github.com/tdewolff/minify/html"
-	"github.com/tdewolff/minify/js"
+	"github.com/tdewolff/minify/v2"
+	"github.com/tdewolff/minify/v2/css"
+	"github.com/tdewolff/minify/v2/html"
 )
 
+// Collection struct
 type Collection struct {
 	Name     string `json:"name"`
 	Src      string `json:"src"`
-	Srcset   string `json:"srcset"`
+	Color    string `json:"color"`
 	SrcHd    string `json:"src_hd"`
 	Width    int    `json:"width"`
 	WidthHd  int    `json:"width_hd"`
@@ -38,11 +35,34 @@ type Collection struct {
 	HeightHd int    `json:"height_hd"`
 }
 
+func getDominantDarkColor(path string) string {
+	f, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	img, _, err := image.Decode(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	colors, _ := vibrant.NewPalette(img, 256)
+	c := colors.ExtractAwesome()
+
+	vc, ok := c["DarkMuted"]
+
+	if !ok {
+		vc = c["Muted"]
+	}
+
+	return vc.Color.RGBHex()
+}
+
 // resize image
 func manipulate(size int, path string) {
 	src, err := imaging.Open(path)
 	if err != nil {
-		log.Fatalf("failed to open image: %v", err)
+		log.Fatal(err)
 	}
 	out := ".moul/" + filepath.Dir(path) + "/" + strconv.Itoa(size) + "/" + filepath.Base(path)
 
@@ -50,11 +70,11 @@ func manipulate(size int, path string) {
 
 	err = imaging.Save(newImage, out)
 	if err != nil {
-		log.Fatalf("failed to save image: %v", err)
+		log.Fatal(err)
 	}
 }
 
-// get image size without open
+// GetImageDimension func get image size without open
 func GetImageDimension(path string) (int, int) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -66,28 +86,6 @@ func GetImageDimension(path string) (int, int) {
 		fmt.Fprintf(os.Stderr, "%s: %v\n", path, err)
 	}
 	return image.Width, image.Height
-}
-
-// make placeholder image
-func sqipy(path string) {
-	workSize := 256
-	count := 1
-	mode := 0
-	alpha := 128
-	repeat := 0
-	workers := runtime.NumCPU()
-	background := ""
-	svg, _, _, err := sqip.Run(path, workSize, count, mode, alpha, repeat, workers, background)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	out := strings.TrimSuffix(".moul/"+path, filepath.Ext(path)) + ".svg"
-	dest := filepath.Dir(out) + "/svg/" + filepath.Base(out)
-	if err := sqip.SaveFile(dest, svg); err != nil {
-		log.Fatal(err)
-	}
 }
 
 // get image from given folder
@@ -109,7 +107,7 @@ func getImage(path string) []string {
 	return files
 }
 
-// generate photos
+// Generate photos
 func Generate(path string, sizes []int) {
 	s := spinner.New(spinner.CharSets[35], 100*time.Millisecond)
 	s.Prefix = "Crafting "
@@ -129,40 +127,21 @@ func Generate(path string, sizes []int) {
 		for _, size := range sizes {
 			manipulate(size, file)
 		}
-		sqipy(file)
 	}
 	s.Stop()
 }
 
-func check(e error) {
-	if e != nil {
-		panic(e)
-	}
-}
-
-// build actual html
+// Build actual html
 func Build() {
 	// get cover
-	base := "./photos/cover/"
-	var coverSrcset bytes.Buffer
 	cover := getImage("./.moul/photos/cover")
 	coverName := filepath.Base(cover[0])
-	coverSrc := base + "1920/" + filepath.Base(cover[0])
-	coverSizes := []int{2560, 1920, 1280, 960, 640, 480, 320}
-	for i, size := range coverSizes {
-		fp := base + strconv.Itoa(size) + "/" + coverName + " " + strconv.Itoa(size) + "w, "
-		coverSrcset.WriteString(fp)
-		le := len(coverSizes) - 1
-
-		if i == le {
-			coverSrcset.WriteString(base + "svg/" + strings.TrimSuffix(coverName, filepath.Ext(coverName)) + ".svg 30w")
-		}
-	}
+	coverColor := getDominantDarkColor("./.moul/photos/cover/620/" + coverName)
 
 	// get profile
 	profile := getImage("./.moul/photos/profile")
-	pfn := filepath.Base(profile[0])
-	pfns := strings.TrimSuffix(filepath.Base(profile[0]), filepath.Ext(filepath.Base(profile[0])))
+	profileName := filepath.Base(profile[0])
+	profileColor := getDominantDarkColor("./.moul/photos/profile/320/" + profileName)
 
 	// get photo collection
 	collection := getImage("./.moul/photos/collection")
@@ -175,12 +154,12 @@ func Build() {
 			width, height := GetImageDimension(".moul/photos/collection/750/" + fs)
 			base := "./photos/collection/750/"
 			baseHd := "./photos/collection/2048/"
-			svg := strings.TrimSuffix(fs, filepath.Ext(fs))
+			color := getDominantDarkColor(photo)
 
 			mc = append(mc, Collection{
 				Name:     fs,
 				Src:      base + fs,
-				Srcset:   base + fs + " 300w, ./photos/collection/svg/" + svg + ".svg 20w",
+				Color:    color,
 				Width:    width,
 				Height:   height,
 				SrcHd:    baseHd + fs,
@@ -192,16 +171,17 @@ func Build() {
 
 	mcj, _ := json.Marshal(mc)
 
-	buildHtml(coverSrc, coverSrcset.String(), coverName, pfn, pfns, string(mcj))
+	buildHTML(coverName, coverColor, profileName, profileColor, string(mcj))
 }
 
-func buildHtml(coverSrc, coverSrcset, coverName, pfn, pfns, collection string) {
+func buildHTML(coverName, coverColor, profileName, profileColor, collection string) {
 	template := `<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<base href="/">
 	<title><%= name %></title>
 	<meta name="description" content="<%= bio %>">
 
@@ -220,77 +200,12 @@ func buildHtml(coverSrc, coverSrcset, coverName, pfn, pfns, collection string) {
 	<meta name="og:url" content="<%= url %>">
 	<meta name="og:site_name" content="<%= name %>">
 	<meta name="og:type" content="website">
-
-	<style type="text/css">
-		*,
-		:before,
-		:after {
-			box-sizing: border-box;
-		}
-		body {
-			margin: 0;
-			font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
-			line-height: 1.5;
-			-webkit-font-smoothing: antialiased;
-			-moz-osx-font-smoothing: grayscale;
-			text-rendering: optimizeLegibility;
-		}
-		.cover {
-			position: relative;
-			height: 500px;
-		}
-		.cover-wrap {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			text-align: center;
-		}
-		.cover-wrap picture {
-			position: relative;
-			display: block;
-			height: 100%;
-			z-index: -1;
-		}
-		.cover-wrap picture img {
-			width: 100%;
-			height: 100%;
-			-o-object-fit: cover;
-			object-fit: cover;
-		}
-		.profile {
-			text-align: center;
-			margin: 32px 0 16px;
-			font-size: 0;
-		}
-		.profile a img {
-			width: 120px;
-			height: 120px;
-			border-radius: 50%;
-			border: 2px solid transparent;
-			transition: border 250ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1);
-		}
-		.profile a img:hover {
-			box-shadow: 0 1px 2px 0 rgba(60,64,67,0.302), 0 2px 6px 2px rgba(60,64,67,0.149);
-		}
-		.name {
-			margin: 0 0 8px;
-			text-align: center;
-			font-weight: 900;
-			color: #111;
-			line-height: 1;
-		}
-		.info {
-			max-width: 500px;
-			text-align: center;
-			margin: 0 auto 24px;
-			color: #444;
-		}
+	<style>
 		.social {
 			display: flex;
 			justify-content: center;
 			align-items: center;
+			margin: 0 0 32px;
 		}
 		.social a {
 			color: #111;
@@ -301,42 +216,39 @@ func buildHtml(coverSrc, coverSrcset, coverName, pfn, pfns, collection string) {
 		.social a:hover {
 			color: #888;
 		}
-		.collection {
-			position: relative;
-			margin: 10px auto;
-		}
-		.collection figure {
-			margin: 0;
-		}
-		.collection figure a {
-			display: block;
-			font-size: 0;
-			float: left;
-		}
-		.collection figure a img {
-			position: absolute;
-			background-size: cover;
-		}
 	</style>
-	<link rel="stylesheet" href="/assets/moul-collection.min.css">
+
+	<link rel="stylesheet" href="assets/index.css">
 </head>
 <body>
-    <div class="cover">
-        <div class="cover-wrap">
-            <picture>
-                <img class="js-img" src="<%= coverSrc %>" srcset="<%= coverSrcset %>" alt="cover" sizes="1px">
-            </picture>
-        </div>
-    </div>
-    <div class="profile">
-        <a href="./photos/profile/1024/<%= pfn %>">
-            <img class="js-img" src="./photos/profile/320/<%= pfn %>" srcset="./photos/profile/320/<%= pfn %> 320w, ./photos/profile/svg/<%= pfns %>.svg 10w" alt="<%= name %>" sizes="1px">
-        </a>
-    </div>
-    <h1 class="name"><%= name %></h1>
-    <p class="info"><%= bio %></p>
-
+	<header>
+		<div class="banner">
+			<picture>
+				<source media="(max-width: 600px)" srcset="./photos/cover/620/<%= coverName %>">
+				<source media="(min-width: 601px)" srcset="./photos/cover/1280/<%= coverName %>">
+				<source media="(min-width: 1201px)" srcset="./photos/cover/2560/<%= coverName %>">
+				<img
+					data-src="./photos/cover/1280/<%= coverName %>"
+					alt="cover"
+					class="lazy"
+					style="background: <%= coverColor %>">
+			</picture>
+		</div>
+	</header>
+	<div class="profile">
+		<a href="./photos/profile/1024/<%= profileName %>">
+			<img
+				data-src="./photos/profile/320/<%= profileName %>"
+				alt="profile photo"
+				class="lazy"
+				style="background: <%= profileColor %>">
+		</a>
+	</div>
+	<h1><%= name %></h1>
 	<%= if (len(twitter) > 0 || len(youtube) > 0 || len(facebook) > 0 || len(instagram) > 0) { %>
+		<%= if (bio && len(bio) > 0) { %>
+		<p style="margin: 0 auto 16px"><%= bio %></p>
+		<% } %>
 	<div class="social">
 		<%= if (twitter) { %>
 			<a href="https://twitter.com/<%= twitter %>">
@@ -359,30 +271,50 @@ func buildHtml(coverSrc, coverSrcset, coverName, pfn, pfns, collection string) {
 			</a>
 		<% } %>
 	</div>
+	<% } else { %>
+		<%= if (bio && len(bio) > 0) { %>
+			<p><%= bio %></p>
+		<% } %>
 	<% } %>
-	
-	<div id="collection">
-	<div>
-	
+
+	<div id="moul"></div>
 	<input type="hidden" id="photo-collection" value="<%= collection %>">
 
-	<script type="text/javascript">
-		const $ = document.querySelector.bind(document);
-		const $$ = document.querySelectorAll.bind(document);
-
-		document.addEventListener("DOMContentLoaded", () => {
-			const photoTags = $$('.js-img');
-			setTimeout(() => {
-				photoTags.forEach(photo => {
-					const sizes = Math.ceil(
-					  (photo.getBoundingClientRect().width / window.innerWidth) * 100
-					);
-					photo.setAttribute('sizes', sizes + 'vw');
-				});
-			}, 50);
-		});
-	</script>
-	<script src="/assets/moul-collection.min.js"></script>
+	<script src="assets/index.js"></script>
+	<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+		<div class="pswp__bg"></div>
+		<div class="pswp__scroll-wrap">
+			<div class="pswp__container">
+				<div class="pswp__item"></div>
+				<div class="pswp__item"></div>
+				<div class="pswp__item"></div>
+			</div>
+			<div class="pswp__ui pswp__ui--hidden">
+				<div class="pswp__top-bar">
+					<div class="pswp__counter"></div>
+					<button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+					<button class="pswp__button pswp__button--share" title="Share"></button>
+					<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+					<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+					<div class="pswp__preloader">
+						<div class="pswp__preloader__icn">
+							<div class="pswp__preloader__cut">
+								<div class="pswp__preloader__donut"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+					<div class="pswp__share-tooltip"></div>
+				</div>
+				<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)"></button>
+				<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button>
+				<div class="pswp__caption">
+					<div class="pswp__caption__center"></div>
+				</div>
+			</div>
+		</div>
+	</div>
 </body>
 </html>`
 
@@ -391,23 +323,22 @@ func buildHtml(coverSrc, coverSrcset, coverName, pfn, pfns, collection string) {
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
 	if err != nil {
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+		log.Fatal(err)
 	}
 
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
-		buildHtml(coverSrc, coverSrcset, coverName, pfn, pfns, collection)
+		buildHTML(coverName, coverColor, profileName, profileColor, collection)
 		fmt.Println("Updated")
 	})
 
 	// push data to template
 	ctx := plush.NewContext()
-	ctx.Set("coverSrcset", coverSrcset)
-	ctx.Set("coverSrc", coverSrc)
 	ctx.Set("coverName", coverName)
+	ctx.Set("coverColor", coverColor)
 
-	ctx.Set("pfn", pfn)
-	ctx.Set("pfns", pfns)
+	ctx.Set("profileName", profileName)
+	ctx.Set("profileColor", profileColor)
 
 	ctx.Set("url", viper.Get("site.url"))
 	ctx.Set("name", viper.Get("site.name"))
@@ -421,20 +352,15 @@ func buildHtml(coverSrc, coverSrcset, coverName, pfn, pfns, collection string) {
 	ctx.Set("collection", collection)
 
 	s, err := plush.Render(template, ctx)
-	check(err)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	m := minify.New()
 	m.AddFunc("text/css", css.Minify)
 	m.AddFunc("text/html", html.Minify)
-	m.AddFuncRegexp(regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$"), js.Minify)
-	//m.AddFuncRegexp(regexp.MustCompile("[/+]json$"), json.Minify)
 
-	m.Add("text/html", &html.Minifier{
-		KeepDocumentTags: true,
-	})
+	mt, err := m.String("text/html", s)
 
-	//mt, err := m.String("text/html", s)
-	//check(err)
-
-	ioutil.WriteFile("./.moul/index.html", []byte(s), 0644)
+	ioutil.WriteFile("./.moul/index.html", []byte(mt), 0644)
 }
