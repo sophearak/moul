@@ -240,8 +240,7 @@ func buildHTML(coverName, coverColor, profileName, profileColor, collection stri
 			<img
 				data-src="./photos/profile/320/<%= profileName %>"
 				alt="profile photo"
-				class="lazy"
-				style="background: <%= profileColor %>">
+				class="lazy">
 		</a>
 	</div>
 	<h1><%= name %></h1>
