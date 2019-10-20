@@ -52,7 +52,13 @@ func getDominantDarkColor(path string) string {
 	vc, ok := c["DarkMuted"]
 
 	if !ok {
-		vc = c["Muted"]
+		vc, ok = c["Muted"]
+		if !ok {
+			vc, ok = c["Muted"]
+			if !ok {
+				vc, ok = c["Vibrant"]
+			}
+		}
 	}
 
 	return vc.Color.RGBHex()
@@ -146,6 +152,14 @@ func Build() {
 	// get photo collection
 	collection := getImage("./.moul/photos/collection")
 
+	// get configuration
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	mc := make([]Collection, 0)
 	for _, photo := range collection {
 		if strings.Contains(photo, "2048") {
@@ -154,7 +168,14 @@ func Build() {
 			width, height := GetImageDimension(".moul/photos/collection/750/" + fs)
 			base := "./photos/collection/750/"
 			baseHd := "./photos/collection/2048/"
-			color := getDominantDarkColor(photo)
+			customBg := viper.Get("background")
+
+			var color string
+			if customBg != nil {
+				color = getDominantDarkColor(photo)
+			} else {
+				color = "rgba(0, 0, 0, .95)"
+			}
 
 			mc = append(mc, Collection{
 				Name:     fs,
@@ -316,14 +337,6 @@ func buildHTML(coverName, coverColor, profileName, profileColor, collection stri
 	</div>
 </body>
 </html>`
-
-	// get configuration
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
