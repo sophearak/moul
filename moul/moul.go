@@ -65,12 +65,13 @@ func getDominantDarkColor(path string) string {
 }
 
 // resize image
-func manipulate(size int, path string) {
+func manipulate(i, size int, path string) {
 	src, err := imaging.Open(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	out := ".moul/" + filepath.Dir(path) + "/" + strconv.Itoa(size) + "/" + filepath.Base(path)
+
+	out := ".moul/" + filepath.Dir(path) + "/" + strconv.Itoa(size) + "/" + "photo-" + strconv.Itoa(i) + filepath.Ext(path)
 
 	newImage := imaging.Resize(src, size, 0, imaging.Lanczos)
 
@@ -129,9 +130,9 @@ func Generate(path string, sizes []int) {
 	}
 
 	s.Start()
-	for _, file := range files {
+	for i, file := range files {
 		for _, size := range sizes {
-			manipulate(size, file)
+			manipulate(i, size, file)
 		}
 	}
 	s.Stop()
