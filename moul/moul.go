@@ -140,10 +140,13 @@ func Generate(path string, sizes []int) {
 
 // Build actual html
 func Build() {
-	// get cover
-	cover := getImage("./.moul/photos/cover")
-	coverName := filepath.Base(cover[0])
-	coverColor := getDominantDarkColor("./.moul/photos/cover/620/" + coverName)
+	// get configuration
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// get profile
 	profile := getImage("./.moul/photos/profile")
@@ -153,14 +156,6 @@ func Build() {
 	// get photo collection
 	collection := getImage("./.moul/photos/collection")
 
-	// get configuration
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	mc := make([]Collection, 0)
 	for _, photo := range collection {
 		if strings.Contains(photo, "2048") {
@@ -169,14 +164,7 @@ func Build() {
 			width, height := GetImageDimension(".moul/photos/collection/750/" + fs)
 			base := "./photos/collection/750/"
 			baseHd := "./photos/collection/2048/"
-			customBg := viper.Get("background")
-
-			var color string
-			if customBg != nil {
-				color = getDominantDarkColor(photo)
-			} else {
-				color = "rgba(0, 0, 0, .95)"
-			}
+			color := getDominantDarkColor(photo)
 
 			mc = append(mc, Collection{
 				Name:     fs,
@@ -193,11 +181,12 @@ func Build() {
 
 	mcj, _ := json.Marshal(mc)
 
-	buildHTML(coverName, coverColor, profileName, profileColor, string(mcj))
+	buildHTML(profileName, profileColor, string(mcj))
 }
 
-func buildHTML(coverName, coverColor, profileName, profileColor, collection string) {
-	template := `<!DOCTYPE html>
+func buildHTML(profileName, profileColor, collection string) {
+	template := `
+<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="utf-8">
@@ -214,11 +203,9 @@ func buildHTML(coverName, coverColor, profileName, profileColor, collection stri
 	<meta name="twitter:site" content="<%= twitter %>">
 	<meta name="twitter:creator" content="<%= twitter %>">
 	<% } %>
-	<meta name="twitter:image:src" content="<%= url %>/photos/cover/1024/<%= coverName %>">
 
 	<meta name="og:title" content="<%= name %>">
 	<meta name="og:description" content="<%= bio %>">
-	<meta name="og:image" content="<%= url %>/photos/cover/1200/<%= coverName %>">
 	<meta name="og:url" content="<%= url %>">
 	<meta name="og:site_name" content="<%= name %>">
 	<meta name="og:type" content="website">
@@ -243,21 +230,10 @@ func buildHTML(coverName, coverColor, profileName, profileColor, collection stri
 	<link rel="stylesheet" href="assets/index.css">
 </head>
 <body>
-	<header>
-		<div class="banner">
-			<picture>
-				<source media="(max-width: 600px)" srcset="./photos/cover/620/<%= coverName %>">
-				<source media="(min-width: 601px)" srcset="./photos/cover/1280/<%= coverName %>">
-				<source media="(min-width: 1201px)" srcset="./photos/cover/2560/<%= coverName %>">
-				<img
-					data-src="./photos/cover/1280/<%= coverName %>"
-					alt="cover"
-					class="lazy"
-					style="background: <%= coverColor %>">
-			</picture>
-		</div>
-	</header>
-	<div class="profile">
+	<div id="moul"></div>
+	<input type="hidden" id="photo-collection" value="<%= collection %>">
+
+	<div class="profile" style="margin-top: 120px">
 		<a href="./photos/profile/1024/<%= profileName %>">
 			<img
 				data-src="./photos/profile/320/<%= profileName %>"
@@ -298,9 +274,6 @@ func buildHTML(coverName, coverColor, profileName, profileColor, collection stri
 		<% } %>
 	<% } %>
 
-	<div id="moul"></div>
-	<input type="hidden" id="photo-collection" value="<%= collection %>">
-
 	<script src="assets/index.js"></script>
 	<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
 		<div class="pswp__bg"></div>
@@ -337,19 +310,17 @@ func buildHTML(coverName, coverColor, profileName, profileColor, collection stri
 		</div>
 	</div>
 </body>
-</html>`
+</html>
+	`
 
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
-		buildHTML(coverName, coverColor, profileName, profileColor, collection)
+		buildHTML(profileName, profileColor, collection)
 		fmt.Println("Updated")
 	})
 
 	// push data to template
 	ctx := plush.NewContext()
-	ctx.Set("coverName", coverName)
-	ctx.Set("coverColor", coverColor)
-
 	ctx.Set("profileName", profileName)
 	ctx.Set("profileColor", profileColor)
 
